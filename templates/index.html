@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Prep</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0f1e; color: #e0e8ff; min-height: 100vh; }
+
+        header { background: linear-gradient(135deg, #0d1529, #1a2744); padding: 1.5rem 2rem; border-bottom: 1px solid #1e3060; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.8rem; color: #60a5fa; }
+        header p { color: #94a3b8; font-size: 0.9rem; }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* SETUP PAGE */
+        .setup { max-width: 600px; margin: 4rem auto; padding: 2rem; }
+        .setup h2 { font-size: 2rem; color: #60a5fa; margin-bottom: 0.5rem; text-align: center; }
+        .setup p { color: #94a3b8; text-align: center; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        select, input { width: 100%; background: #1e2d4a; border: 1px solid #2d4070; border-radius: 10px; padding: 0.8rem 1rem; color: #e0e8ff; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        select:focus, input:focus { border-color: #60a5fa; }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb, #60a5fa); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(96,165,250,0.3); }
+        .btn-secondary { background: #1e2d4a; color: #60a5fa; border: 1px solid #2d4070; margin-top: 0.5rem; }
+        .btn-secondary:hover { background: #2d4070; }
+        .btn-danger { background: #1e1a2a; color: #f87171; border: 1px solid #dc2626; }
+
+        /* INTERVIEW PAGE */
+        .interview { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        .progress-bar { background: #1e2d4a; border-radius: 999px; height: 8px; margin-bottom: 2rem; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 999px; transition: width 0.5s; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem; }
+
+        .question-card { background: #1e2d4a; border: 1px solid #2d4070; border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
+        .question-meta { display: flex; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .badge { padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-category { background: #1e3060; color: #60a5fa; }
+        .badge-easy { background: #1a2e1a; color: #4ade80; }
+        .badge-medium { background: #2e2a1a; color: #fbbf24; }
+        .badge-hard { background: #2e1a1a; color: #f87171; }
+        .question-text { font-size: 1.2rem; font-weight: 600; color: #e0e8ff; line-height: 1.6; }
+        .hint-box { background: #0d1529; border-left: 3px solid #fbbf24; padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; margin-top: 1rem; font-size: 0.85rem; color: #fbbf24; display: none; }
+
+        .answer-section { margin-bottom: 1.5rem; }
+        textarea { width: 100%; background: #1e2d4a; border: 1px solid #2d4070; border-radius: 12px; padding: 1rem; color: #e0e8ff; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 150px; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #60a5fa; }
+        .char-count { font-size: 0.8rem; color: #94a3b8; text-align: right; margin-top: 0.3rem; }
+
+        .action-btns { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .action-btns .btn { width: auto; flex: 1; }
+
+        /* FEEDBACK CARD */
+        .feedback-card { background: #1e2d4a; border: 1px solid #2d4070; border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; display: none; }
+        .score-display { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .score-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; border: 3px solid; flex-shrink: 0; }
+        .score-circle.excellent { border-color: #4ade80; color: #4ade80; background: #1a2e1a; }
+        .score-circle.good { border-color: #60a5fa; color: #60a5fa; background: #1e2d4a; }
+        .score-circle.average { border-color: #fbbf24; color: #fbbf24; background: #2e2a1a; }
+        .score-circle.poor { border-color: #f87171; color: #f87171; background: #2e1a1a; }
+        .verdict-text { font-size: 1.3rem; font-weight: 700; }
+        .feedback-text { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
+        .feedback-list { margin-bottom: 1rem; }
+        .feedback-list h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .feedback-list h4.green { color: #4ade80; }
+        .feedback-list h4.red { color: #f87171; }
+        .feedback-list li { font-size: 0.85rem; color: #94a3b8; margin-left: 1.2rem; margin-bottom: 0.3rem; }
+        .ideal-answer { background: #0d1529; border-left: 3px solid #60a5fa; padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #94a3b8; line-height: 1.6; }
+        .ideal-answer strong { color: #60a5fa; display: block; margin-bottom: 0.3rem; }
+
+        /* REPORT PAGE */
+        .report { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        .report-header { text-align: center; margin-bottom: 2rem; }
+        .big-score { font-size: 5rem; font-weight: 900; color: #60a5fa; line-height: 1; }
+        .report-meta { color: #94a3b8; margin-top: 0.5rem; }
+        .hire-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 999px; font-size: 1rem; font-weight: 700; margin-top: 1rem; }
+        .hire-strong { background: #1a2e1a; color: #4ade80; border: 2px solid #4ade80; }
+        .hire-yes { background: #1e2d4a; color: #60a5fa; border: 2px solid #60a5fa; }
+        .hire-maybe { background: #2e2a1a; color: #fbbf24; border: 2px solid #fbbf24; }
+        .hire-no { background: #2e1a1a; color: #f87171; border: 2px solid #f87171; }
+
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .report-card { background: #1e2d4a; border: 1px solid #2d4070; border-radius: 12px; padding: 1.5rem; }
+        .report-card h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+        .report-card h3.green { color: #4ade80; }
+        .report-card h3.red { color: #f87171; }
+        .report-card h3.blue { color: #60a5fa; }
+        .report-card li { font-size: 0.85rem; color: #94a3b8; margin-left: 1.2rem; margin-bottom: 0.5rem; line-height: 1.5; }
+        .motivational { background: linear-gradient(135deg, #1e2d4a, #0d1529); border: 1px solid #2563eb; border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.7; font-style: italic; }
+
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,15,30,0.8); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
+        .loading-overlay.show { display: flex; }
+        .spinner { width: 50px; height: 50px; border: 3px solid #1e2d4a; border-top: 3px solid #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay p { color: #60a5fa; font-size: 1rem; }
+
+        .roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+        .role-btn { background: #1e2d4a; border: 2px solid #2d4070; border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .role-btn:hover { border-color: #60a5fa; background: #1e3060; }
+        .role-btn.selected { border-color: #60a5fa; background: #1e3060; }
+        .role-btn .icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+        .role-btn .name { font-size: 0.8rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <p id="loadingText">AI is thinking...</p>
+</div>
+
+<header>
+    <div>
+        <h1>🎯 AI Interview Prep</h1>
+        <p>Practice with AI-powered mock interviews</p>
+    </div>
+    <div id="headerStats" style="text-align:right; display:none;">
+        <div style="font-size:0.85rem; color:#94a3b8;" id="roleDisplay"></div>
+        <div style="font-size:0.85rem; color:#60a5fa;" id="scoreDisplay"></div>
+    </div>
+</header>
+
+<!-- SETUP PAGE -->
+<div class="page active" id="setupPage">
+    <div class="setup">
+        <h2>Mock Interview</h2>
+        <p>Select your role and experience level to begin</p>
+
+        <div class="form-group">
+            <label>Choose Your Role</label>
+            <div class="roles-grid">
+                <div class="role-btn selected" onclick="selectRole(this, 'Frontend Developer')">
+                    <div class="icon">🎨</div>
+                    <div class="name">Frontend Dev</div>
+                </div>
+                <div class="role-btn" onclick="selectRole(this, 'Backend Developer')">
+                    <div class="icon">⚙️</div>
+                    <div class="name">Backend Dev</div>
+                </div>
+                <div class="role-btn" onclick="selectRole(this, 'Full Stack Developer')">
+                    <div class="icon">🚀</div>
+                    <div class="name">Full Stack</div>
+                </div>
+                <div class="role-btn" onclick="selectRole(this, 'ML Engineer')">
+                    <div class="icon">🧠</div>
+                    <div class="name">ML Engineer</div>
+                </div>
+                <div class="role-btn" onclick="selectRole(this, 'Data Scientist')">
+                    <div class="icon">📊</div>
+                    <div class="name">Data Scientist</div>
+                </div>
+                <div class="role-btn" onclick="selectRole(this, 'DevOps Engineer')">
+                    <div class="icon">🔧</div>
+                    <div class="name">DevOps</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Experience Level</label>
+            <select id="level">
+                <option value="Fresher/Entry Level">Fresher / Entry Level (0-1 years)</option>
+                <option value="Junior">Junior (1-2 years)</option>
+                <option value="Mid Level">Mid Level (2-4 years)</option>
+                <option value="Senior">Senior (4+ years)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Number of Questions</label>
+            <select id="numQuestions">
+                <option value="5">5 Questions (Quick)</option>
+                <option value="10" selected>10 Questions (Standard)</option>
+                <option value="15">15 Questions (Full)</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="startInterview()">Start Interview →</button>
+    </div>
+</div>
+
+<!-- INTERVIEW PAGE -->
+<div class="page" id="interviewPage">
+    <div class="interview">
+        <div class="progress-text">
+            <span id="progressLabel">Question 1 of 10</span>
+            <span id="scoreLabel">Score: 0/0</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+
+        <div class="question-card" id="questionCard">
+            <div class="question-meta">
+                <span class="badge badge-category" id="qCategory">Technical</span>
+                <span class="badge" id="qDifficulty">Medium</span>
+            </div>
+            <div class="question-text" id="questionText">Loading question...</div>
+            <div class="hint-box" id="hintBox"></div>
+        </div>
+
+        <div class="answer-section">
+            <textarea id="answerInput" placeholder="Type your answer here... Be detailed and specific!" oninput="updateCharCount()"></textarea>
+            <div class="char-count"><span id="charCount">0</span> characters</div>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn btn-secondary" onclick="showHint()">💡 Show Hint</button>
+            <button class="btn btn-primary" onclick="submitAnswer()" id="submitBtn">Submit Answer →</button>
+            <button class="btn btn-danger" onclick="skipQuestion()">Skip →</button>
+        </div>
+
+        <div class="feedback-card" id="feedbackCard">
+            <div class="score-display">
+                <div class="score-circle" id="scoreCircle"></div>
+                <div>
+                    <div class="verdict-text" id="verdictText"></div>
+                    <div style="color:#94a3b8; font-size:0.85rem;" id="scoreText"></div>
+                </div>
+            </div>
+            <p class="feedback-text" id="feedbackText"></p>
+            <div class="feedback-list">
+                <h4 class="green">✅ Strengths</h4>
+                <ul id="strengthsList"></ul>
+            </div>
+            <div class="feedback-list">
+                <h4 class="red">⚠️ Areas to Improve</h4>
+                <ul id="improvementsList"></ul>
+            </div>
+            <div class="ideal-answer">
+                <strong>💡 Ideal Answer:</strong>
+                <span id="idealAnswer"></span>
+            </div>
+            <br>
+            <button class="btn btn-primary" onclick="nextQuestion()" id="nextBtn">Next Question →</button>
+        </div>
+    </div>
+</div>
+
+<!-- REPORT PAGE -->
+<div class="page" id="reportPage">
+    <div class="report">
+        <div class="report-header">
+            <div style="font-size:1rem; color:#94a3b8; margin-bottom:0.5rem;">Interview Complete!</div>
+            <div class="big-score" id="finalScore">0%</div>
+            <div class="report-meta" id="finalMeta"></div>
+            <div class="hire-badge" id="hireBadge"></div>
+        </div>
+
+        <div class="motivational" id="motivationalMsg"></div>
+
+        <div class="report-grid">
+            <div class="report-card">
+                <h3 class="green">💪 Top Strengths</h3>
+                <ul id="reportStrengths"></ul>
+            </div>
+            <div class="report-card">
+                <h3 class="red">📈 Key Improvements</h3>
+                <ul id="reportImprovements"></ul>
+            </div>
+        </div>
+
+        <div class="report-card" style="margin-bottom:1.5rem;">
+            <h3 class="blue">📚 Study These Topics</h3>
+            <ul id="studyTopics"></ul>
+        </div>
+
+        <button class="btn btn-primary" onclick="restartInterview()" style="margin-bottom:0.8rem;">🔄 Try Again</button>
+        <button class="btn btn-secondary" onclick="showPage('setupPage')">← Change Role</button>
+    </div>
+</div>
+
+<script>
+    let selectedRole = 'Frontend Developer'
+    let currentQuestion = null
+    let askedQuestions = []
+    let results = []
+    let currentQ = 0
+    let totalQ = 10
+    let totalScore = 0
+    let maxScore = 0
+
+    function selectRole(el, role) {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'))
+        el.classList.add('selected')
+        selectedRole = role
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+        document.getElementById(pageId).classList.add('active')
+    }
+
+    function showLoading(text) {
+        document.getElementById('loadingText').textContent = text
+        document.getElementById('loading').classList.add('show')
+    }
+
+    function hideLoading() {
+        document.getElementById('loading').classList.remove('show')
+    }
+
+    async function startInterview() {
+        totalQ = parseInt(document.getElementById('numQuestions').value)
+        const level = document.getElementById('level').value
+        currentQ = 0
+        askedQuestions = []
+        results = []
+        totalScore = 0
+        maxScore = 0
+
+        document.getElementById('headerStats').style.display = 'block'
+        document.getElementById('roleDisplay').textContent = `${selectedRole} · ${level}`
+
+        showPage('interviewPage')
+        await loadQuestion()
+    }
+
+    async function loadQuestion() {
+        showLoading('Generating your next question...')
+        const level = document.getElementById('level').value
+
+        const res = await fetch('/get_question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: selectedRole, level, asked_questions: askedQuestions })
+        })
+        const data = await res.json()
+        hideLoading()
+
+        currentQuestion = data
+        askedQuestions.push(data.question)
+
+        document.getElementById('questionText').textContent = data.question
+        document.getElementById('qCategory').textContent = data.category
+        document.getElementById('hintBox').textContent = '💡 ' + data.hint
+        document.getElementById('hintBox').style.display = 'none'
+        document.getElementById('answerInput').value = ''
+        document.getElementById('charCount').textContent = '0'
+        document.getElementById('feedbackCard').style.display = 'none'
+        document.getElementById('submitBtn').style.display = 'block'
+
+        const diff = data.difficulty
+        const diffBadge = document.getElementById('qDifficulty')
+        diffBadge.textContent = diff
+        diffBadge.className = 'badge badge-' + diff.toLowerCase()
+
+        updateProgress()
+    }
+
+    function updateProgress() {
+        const pct = (currentQ / totalQ) * 100
+        document.getElementById('progressFill').style.width = pct + '%'
+        document.getElementById('progressLabel').textContent = `Question ${currentQ + 1} of ${totalQ}`
+        document.getElementById('scoreLabel').textContent = `Score: ${totalScore}/${maxScore}`
+        document.getElementById('scoreDisplay').textContent = `Score: ${totalScore}/${maxScore}`
+    }
+
+    function showHint() {
+        document.getElementById('hintBox').style.display = 'block'
+    }
+
+    function updateCharCount() {
+        const len = document.getElementById('answerInput').value.length
+        document.getElementById('charCount').textContent = len
+    }
+
+    async function submitAnswer() {
+        const answer = document.getElementById('answerInput').value.trim()
+        if (!answer) { alert('Please type an answer first!'); return }
+
+        const level = document.getElementById('level').value
+        showLoading('AI is evaluating your answer...')
+
+        const res = await fetch('/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: currentQuestion.question, answer, role: selectedRole, level })
+        })
+        const data = await res.json()
+        hideLoading()
+
+        totalScore += data.score
+        maxScore += data.max_score
+        results.push(data)
+        currentQ++
+
+        showFeedback(data)
+        updateProgress()
+    }
+
+    function showFeedback(data) {
+        const score = data.score
+        const max = data.max_score
+        const pct = Math.round((score / max) * 100)
+
+        const circle = document.getElementById('scoreCircle')
+        circle.textContent = `${score}/${max}`
+        if (pct >= 80) circle.className = 'score-circle excellent'
+        else if (pct >= 60) circle.className = 'score-circle good'
+        else if (pct >= 40) circle.className = 'score-circle average'
+        else circle.className = 'score-circle poor'
+
+        document.getElementById('verdictText').textContent = data.verdict
+        document.getElementById('scoreText').textContent = `${score} out of ${max} points (${pct}%)`
+        document.getElementById('feedbackText').textContent = data.feedback
+        document.getElementById('idealAnswer').textContent = data.ideal_answer
+
+        document.getElementById('strengthsList').innerHTML = data.strengths.map(s => `<li>${s}</li>`).join('')
+        document.getElementById('improvementsList').innerHTML = data.improvements.map(i => `<li>${i}</li>`).join('')
+
+        document.getElementById('submitBtn').style.display = 'none'
+        document.getElementById('feedbackCard').style.display = 'block'
+
+        const nextBtn = document.getElementById('nextBtn')
+        nextBtn.textContent = currentQ >= totalQ ? 'View Final Report →' : 'Next Question →'
+    }
+
+    async function nextQuestion() {
+        if (currentQ >= totalQ) {
+            await generateReport()
+        } else {
+            await loadQuestion()
+        }
+    }
+
+    async function skipQuestion() {
+        currentQ++
+        if (currentQ >= totalQ) {
+            await generateReport()
+        } else {
+            await loadQuestion()
+        }
+    }
+
+    async function generateReport() {
+        const level = document.getElementById('level').value
+        showLoading('Generating your interview report...')
+
+        const res = await fetch('/final_report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: selectedRole, level, results })
+        })
+        const data = await res.json()
+        hideLoading()
+
+        document.getElementById('finalScore').textContent = data.percentage + '%'
+        document.getElementById('finalMeta').textContent = `${totalScore}/${maxScore} points · ${selectedRole} · ${level}`
+        document.getElementById('motivationalMsg').textContent = data.motivational_message
+
+        const hireBadge = document.getElementById('hireBadge')
+        hireBadge.textContent = data.hire_recommendation
+        const hireClass = data.hire_recommendation.includes('Strong') ? 'hire-strong' :
+                          data.hire_recommendation.includes('Maybe') ? 'hire-maybe' :
+                          data.hire_recommendation === 'Hire' ? 'hire-yes' : 'hire-no'
+        hireBadge.className = 'hire-badge ' + hireClass
+
+        document.getElementById('reportStrengths').innerHTML = data.top_strengths.map(s => `<li>${s}</li>`).join('')
+        document.getElementById('reportImprovements').innerHTML = data.key_improvements.map(i => `<li>${i}</li>`).join('')
+        document.getElementById('studyTopics').innerHTML = data.study_topics.map(t => `<li>${t}</li>`).join('')
+
+        showPage('reportPage')
+    }
+
+    function restartInterview() {
+        showPage('setupPage')
+        document.getElementById('headerStats').style.display = 'none'
+    }
+</script>
+</body>
+</html>
